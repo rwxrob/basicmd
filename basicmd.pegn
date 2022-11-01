@@ -1,0 +1,35 @@
+
+Grammar    <-- Block*
+Block      <-  (Heading / Bulleted / Numbered / Seperator / Syntaxed
+               / Verbatim / Figure / Paragraph) EOB
+
+# TODO rest of the Block
+
+Heading    <-  Heading6 / Heading5 / Heading4 / Heading3 / Heading2 / Heading1
+Heading1   <-- '#' <(!EOB Span)+> EOB
+Heading2   <-- '##' <(!EOB Span)+> EOB
+Heading3   <-- '###' <(!EOB Span)+> EOB
+Heading4   <-- '####' <(!EOB Span)+> EOB
+Heading5   <-- '#####' <(!EOB Span)+> EOB
+Heading6   <-- '######' <(!EOB Span)+> EOB
+
+Paragraph  <-- (!EOB Span)+ EOB
+
+Span       <- StrEmph / Emph / Strong / Mono / Link / Plain
+Plain      <-- (Field ws)* Field
+Mono       <-- BKTICK Plain BKTICK
+StrEmph    <-- '***' Plain '***'
+Strong     <-- '**' Plain '**'
+Emph       <-- '*' Plain '*'
+Field      <-- uprint+
+Link       <- HyperLink / AutoLink
+HyperLink  <-- '[' LinkText '](' LinkTarget ')'
+AutoLink   <-- '<' <(!'>' uprint )+> '>'
+LinkText   <-- (!']' unipoint)+
+LinkTarget <-- (!')' unipoint)+
+
+EOB        <-  (!(EOL{2} / EOF) ws)* ( EOL{2} / EOF)
+EOL        <-  CR? LF
+EOF        <- # end of data stream
+
+ws         <-  SP / CR / LF
