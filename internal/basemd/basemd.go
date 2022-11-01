@@ -4,62 +4,60 @@ import (
 	"github.com/rwxrob/scan"
 )
 
-func MatchWS(s *scan.R) int {
-	switch {
-	case s.Is("\r"):
-		return 1
-	case s.Is("\n"):
-		return 1
-	case s.Is(" "):
-		return 1
-	default:
-		return -1
+func ScanWS(s *scan.R) bool {
+	b, r, lp := s.P, s.R, s.LP
+	var found bool
+	for s.Scan() {
+		switch s.R {
+		case ' ', '\r', '\n':
+			found = true
+			continue
+		}
+		break
 	}
+	if !found {
+		s.P, s.R, s.LP = b, r, lp
+	}
+	return found
 }
 
-func MatchEOL(s *scan.R) int {
-	switch {
-	case s.Peek("\r\n"):
-		return 2
-	case s.Peek("\n"):
-		return 1
-	default:
-		return -1
+func ScanEOL(s *scan.R) bool {
+	b, r, lp := s.P, s.R, s.LP
+	var found bool
+	s.Scan()
+	switch s.R {
+	case '\n':
+		found = true
+	case '\r':
+		if s.Scan() && s.R == '\n' {
+			found = true
+		}
 	}
+	if !found {
+		s.P, s.R, s.LP = b, r, lp
+	}
+	return found
 }
 
-func MatchEOF(s *scan.R) int {
-	if s.P == len(s.B) {
-		return 0
-	}
-	return -1
-}
-
-func MatchEOB(s *scan.R) int {
-	var b int
-	m := s.P
+func ScanEOB(s *scan.R) bool {
+	b, r, lp := s.P, s.R, s.LP
+	var found bool
 TOP:
 	{
-		if r := MatchEOL(s); r >= 0 {
-			s.P += r
-			if rr := MatchEOL(s); rr >= 0 {
-				s.P = m
-				return r + rr
-			}
-			b += r
-			s.P += r
+		switch {
+		case s.End():
+			found = true
+		case ScanEOL(s) && ScanEOL(s):
+			found = true
 			goto TOP
-		}
-		if r := MatchEOF(s); r >= 0 {
-			s.P = m
-			return b
-		}
-		if r := MatchWS(s); r >= 0 {
-			b += r
-			s.P += r
+		case ScanEOL(s) && s.End():
+			found = true
+		case ScanWS(s):
 			goto TOP
 		}
 	}
-	s.P = m
-	return -1
+	if !found {
+		s.P, s.R, s.LP = b, r, lp
+	}
+	return found
 }

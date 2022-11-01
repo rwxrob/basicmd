@@ -28,7 +28,7 @@ AutoLink   <-- '<' <(!'>' uprint )+> '>'
 LinkText   <-- (!']' unipoint)+
 LinkTarget <-- (!')' unipoint)+
 
-EOB        <-  (!(EOL{2} / EOF) ws)* ( EOL{2} / EOF)
+EOB        <-  ws* (EOF / EOL{2})
 EOL        <-  CR? LF
 EOF        <- # end of data stream
 

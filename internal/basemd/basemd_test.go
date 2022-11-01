@@ -7,71 +7,96 @@ import (
 	"github.com/rwxrob/scan"
 )
 
-func ExampleMatchWS() {
+func ExampleScanWS() {
 	s := new(scan.R)
-	s.B = []byte(` `)
-	fmt.Println(basemd.MatchWS(s))
-	// Output:
-	// 1
-}
-
-func ExampleMatchEOL() {
-	s := new(scan.R)
-	s.B = []byte("\r\n")
-	fmt.Println(basemd.MatchEOL(s))
-	s.P = 0
-	s.B = []byte("\n")
-	fmt.Println(basemd.MatchEOL(s))
-	s.P = 0
-	s.B = []byte("\r")
-	fmt.Println(basemd.MatchEOL(s))
-	// Output:
-	// 2
-	// 1
-	// -1
-}
-
-func ExampleMatchEOF() {
-	s := new(scan.R)
-	s.B = []byte(` `)
+	//s.Trace++
+	s.B = []byte(`1 `)
+	fmt.Println(basemd.ScanWS(s))
+	s.Print() // nothing advanced at all
 	s.Scan()
-	fmt.Println(basemd.MatchEOF(s))
-	s.P = 0
-	s.B = []byte(` `)
-	fmt.Println(basemd.MatchEOF(s))
+	s.Print()
+	fmt.Println(basemd.ScanWS(s))
+	s.Print()
 	// Output:
-	// 0
-	// -1
+	// false
+	// 0 '\x00' "1 "
+	// 1 '1' " "
+	// true
+	// 2 ' ' ""
 }
 
-func ExampleMatchEOB_line_Returns() {
-	s := new(scan.R)
-	s.B = []byte("\n\n")
-	fmt.Println(basemd.MatchEOB(s))
-	// Output:
-	// 2
-}
-
-func ExampleMatchEOB_carriage_and_Line_Returns() {
+func ExampleScanEOL_carriage_Feed() {
 	s := new(scan.R)
 	s.B = []byte("\r\n\r\n")
-	fmt.Println(basemd.MatchEOB(s))
+	s.Print()
+	fmt.Println(basemd.ScanEOL(s))
+	s.Print()
 	// Output:
-	// 4
+	// 0 '\x00' "\r\n\r\n"
+	// true
+	// 2 '\n' "\r\n"
 }
 
-func ExampleMatchEOB_odd_Returns() {
+func ExampleScanEOL_feed() {
+	s := new(scan.R)
+	s.B = []byte("\n")
+	s.Print()
+	fmt.Println(basemd.ScanEOL(s))
+	s.Print()
+	// Output:
+	// 0 '\x00' "\n"
+	// true
+	// 1 '\n' ""
+}
+
+func ExampleScanEOL_carriage_Not_Enough() {
+	s := new(scan.R)
+	s.B = []byte("\r")
+	s.Print()
+	fmt.Println(basemd.ScanEOL(s))
+	s.Print()
+	// Output:
+	// 0 '\x00' "\r"
+	// false
+	// 0 '\x00' "\r"
+}
+
+func ExampleScanEOB_line_Returns() {
+	s := new(scan.R)
+	s.B = []byte("\n\n")
+	fmt.Println(basemd.ScanEOB(s))
+	s.Print()
+	// Output:
+	// true
+	// 2 '\n' ""
+}
+
+func ExampleScanEOB_carriage_and_Line_Returns() {
+	s := new(scan.R)
+	s.B = []byte("\r\n\r\n")
+	fmt.Println(basemd.ScanEOB(s))
+	s.Print()
+	// Output:
+	// true
+	// 4 '\n' ""
+}
+
+func ExampleScanEOB_odd_Returns() {
 	s := new(scan.R)
 	s.B = []byte("\r\n\n")
-	fmt.Println(basemd.MatchEOB(s))
+	fmt.Println(basemd.ScanEOB(s))
+	s.Print()
 	// Output:
-	// 3
+	// true
+	// 3 '\n' ""
 }
 
-func ExampleMatchEOB_extra_WS() {
+func ExampleScanEOB_extra_WS() {
 	s := new(scan.R)
 	s.B = []byte("   \r\n\r\n\r\n")
-	fmt.Println(basemd.MatchEOB(s))
+	fmt.Println(basemd.ScanEOB(s))
+	s.Print()
 	// Output:
-	// 7
+	// true
+	// 9 '\n' ""
 }
